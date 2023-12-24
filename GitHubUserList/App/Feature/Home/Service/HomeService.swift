@@ -13,9 +13,4 @@ final class HomeService: BaseAPIService<GitHubAPI> {
     func getSearchUser(userName: String, page: Int = 1) -> Single<SearchUser> {
         return singleRequest(.searchUser(name: userName, page: page), responseType: SearchUser.self)
     }
-    
-    /// 유저 accessToken을 조회할 API
-    func getAccessToken(dto: AccessTokenDTO) -> Single<AccessToken> {
-        return singleRequest(.getAccessToken(dto: dto), responseType: AccessToken.self)
-    }
 }

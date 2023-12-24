@@ -16,7 +16,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         self.window = UIWindow(windowScene: windowScene)
         self.window?.overrideUserInterfaceStyle = .light
         let homeService = HomeService()
-        let homeViewModel = HomeViewModel(service: homeService)
+        let authService = AuthService()
+        let homeViewModel = HomeViewModel(
+            homeService: homeService,
+            authService: authService
+        )
         let homeViewController = HomeViewController(viewModel: homeViewModel)
         self.window?.rootViewController = homeViewController
         self.window?.makeKeyAndVisible()

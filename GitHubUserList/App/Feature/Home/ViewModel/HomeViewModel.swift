@@ -26,10 +26,13 @@ final class HomeViewModel: ViewModelType {
     
     var input = Input()
     var disposeBag = DisposeBag()
-    var service: HomeService
+    var homeService: HomeService
+    var authService: AuthService
     
-    init(service: HomeService) {
-        self.service = service
+    init(homeService: HomeService, authService: AuthService) {
+        self.homeService = homeService
+        self.authService = authService
+        
     }
     
     func transform() -> Output {
@@ -37,9 +40,9 @@ final class HomeViewModel: ViewModelType {
         
         /// 유저정보 조회
         input.actionUserSearch
-            .flatMap { userName -> Single<SearchUser> in
-                return self.service.getSearchUser(userName: userName)
-                    .catch { error in return .never() }
+            .flatMap { [weak self] userName -> Single<SearchUser> in
+                return self?.homeService.getSearchUser(userName: userName)
+                    .catch { error in return .never() } ?? .never()
             }
             .subscribe(onNext: {
                 if let users = $0.items {
@@ -53,14 +56,14 @@ final class HomeViewModel: ViewModelType {
         
         /// callback으로 받아온 code값을 가지고 accessToken을 저장
         input.actionGetAcccessTokenPublish
-            .flatMap { code -> Single<AccessToken> in
+            .flatMap { [weak self] code -> Single<AccessToken> in
                 let dto = AccessTokenDTO(
-                    clientId: "Iv1.e45ae2cabb863492",
-                    clientSecret: "fc652085dc0d2b4f3955eda347e59afa6f25195e",
+                    clientId: Constant.clientId,
+                    clientSecret: Constant.clientSecret,
                     code: code
                 )
-                return self.service.getAccessToken(dto: dto)
-                    .catch { _ in return .never() }
+                return self?.authService.getAccessToken(dto: dto)
+                    .catch { _ in return .never() } ?? .never()
             }
             .subscribe(onNext: {
                 if let accessToken = $0.accessToken {

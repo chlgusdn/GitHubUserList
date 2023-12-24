@@ -159,6 +159,9 @@ extension HomeViewController: UICompositionalable {
 @available(iOS 17.0, *)
 #Preview() {
     HomeViewController(
-        viewModel: HomeViewModel(service: HomeService())
+        viewModel: HomeViewModel(
+            homeService: HomeService(),
+            authService: AuthService()
+        )
     )
 }

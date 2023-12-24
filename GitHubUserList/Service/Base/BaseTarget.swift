@@ -21,4 +21,9 @@ extension BaseTargetType {
     var method: Moya.Method {
         return .post
     }
+    
+    /// Header에 표기될 Authorization 타입 
+    var authorizationType: AuthorizationType? {
+        return .bearer
+    }
 }

@@ -13,6 +13,7 @@ enum NetworkError: Error {
     case notModified
     case validationfailed
     case serverError
+    case badCredential
     case unknown(message: String)
     
     var errorDescription: String {
@@ -21,6 +22,7 @@ enum NetworkError: Error {
         case .notModified:              return "수정에 실패하였습니다"
         case .validationfailed:         return "유효성 검사에 실패하였습니다"
         case .serverError:              return "서비스를 이용할 수 없습니다"
+        case .badCredential:            return "accessToken이 만료되었습니다"
         case .unknown(let message):     return message
         }
     }

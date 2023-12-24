@@ -34,7 +34,8 @@ class BaseAPIService<Target: BaseTargetType> {
             
             // networklogger Setting
             let loggerPlugin = NetworkLoggerPlugin()
-            let session = Session()
+            let requestInterceptor = APIRequestInterceptor()
+            let session = Session(interceptor: requestInterceptor)
             
             provider = MoyaProvider<Target>(session: session, plugins: [loggerPlugin, authPlugin])
         }
