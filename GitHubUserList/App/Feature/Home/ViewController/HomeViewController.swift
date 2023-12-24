@@ -121,6 +121,7 @@ extension HomeViewController: UILayoutable {
         
         customSearchBar
             .shouldLoadResultObservable
+            .distinctUntilChanged()
             .bind(to: viewModel.input.actionUserSearchPublish)
             .disposed(by: disposeBag)
         

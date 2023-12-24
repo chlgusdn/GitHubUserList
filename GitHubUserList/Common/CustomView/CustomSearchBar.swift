@@ -124,7 +124,9 @@ extension CustomSearchBar: UILayoutable {
             .bind(to: searchButtonTappedPublish)
             .disposed(by: disposeBag)
         
-        shouldLoadResultObservable = searchButtonTappedPublish.withLatestFrom(searchTextField.rx.text) { $1 ?? ""}
+        shouldLoadResultObservable = searchButtonTappedPublish
+            .withLatestFrom(searchTextField.rx.text.orEmpty) { $1 }
+            .filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
     }
 }
 
