@@ -16,6 +16,7 @@ final class HomeViewController: UIViewController {
         collectionViewLayout: compositionalLayout()
     ).then {
         $0.backgroundColor = .white
+        $0.keyboardDismissMode = .interactive
         $0.register(
             HomeCollectionViewCell.self,
             forCellWithReuseIdentifier: HomeCollectionViewCell.identifier
