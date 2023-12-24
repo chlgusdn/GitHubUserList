@@ -13,17 +13,16 @@ final class HomeCollectionViewCell: UICollectionViewCell, Identifierable {
     private let userImageView = UIImageView().then {
         $0.layer.cornerRadius = 25
         $0.layer.masksToBounds = true
-        $0.backgroundColor = .red
     }
     
     private let userNameLabel = UILabel().then {
-        $0.text = "chlgusdn"
+        $0.text = ""
         $0.textColor = .darkGray
         $0.font = UIFont.systemFont(ofSize: 16)
     }
     
     private let githubURLAddressLabel = UILabel().then {
-        $0.text = "https://"
+        $0.text = ""
         $0.textColor = .darkGray
         $0.font = UIFont.systemFont(ofSize: 14)
     }
@@ -39,6 +38,7 @@ final class HomeCollectionViewCell: UICollectionViewCell, Identifierable {
 }
 
 extension HomeCollectionViewCell {
+    /// 셀 레이아웃을 설정하는 함수
     func configure(imageURL: String, userName: String, gitHubURL: String) {
         userImageView.kf.setImage(with: URL(string: imageURL)!)
         userNameLabel.text = userName

@@ -29,7 +29,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
         if let url = URLContexts.first?.url {
             let code = url.absoluteString.components(separatedBy: "code=").last ?? ""
-            NotificationCenter.default.post(name: Notification.Name("getAccessToken"), object: code)
+            NotificationCenter.default.post(name: .getAccessToken, object: code)
         }
     }
 }

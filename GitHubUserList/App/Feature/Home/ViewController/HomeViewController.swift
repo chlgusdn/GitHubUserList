@@ -88,15 +88,46 @@ extension HomeViewController: UILayoutable {
     func setBind() {
         let output = viewModel.transform()
         
+        /// 셀 클릭 시 URL 이동
+        collectionView
+            .rx
+            .modelSelected(User.self)
+            .subscribe(onNext: {
+                guard let repoURL = $0.htmlURL,
+                        let url = URL(string: repoURL) else {
+                    return
+                }
+                
+                UIApplication.shared.open(url)
+            })
+            .disposed(by: disposeBag)
+        
+        
+        /// 페이징 처리
+        collectionView
+            .rx
+            .willDisplayCell
+            .flatMap { [weak self] (cell, indexPath) -> Observable<Void> in
+                // 셀의 전체 개수를 가져옴
+                guard let numberSection = self?.collectionView.numberOfItems(inSection: indexPath.section) else {
+                    return .empty()
+                }
+                
+                return (indexPath.row == numberSection - 1) ? .just(()) : .empty()
+                
+            }
+            .bind(to: viewModel.input.actionUserPagingPublish)
+            .disposed(by: disposeBag)
+        
         customSearchBar
             .shouldLoadResultObservable
-            .bind(to: viewModel.input.actionUserSearch)
+            .bind(to: viewModel.input.actionUserSearchPublish)
             .disposed(by: disposeBag)
         
         
         NotificationCenter.default
             .rx
-            .notification(Notification.Name("getAccessToken"))
+            .notification(.getAccessToken)
             .subscribe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] noti in
                 let token = noti.object as! String
@@ -116,7 +147,7 @@ extension HomeViewController: UILayoutable {
                 cell.configure(
                     imageURL: data.avatarURL ?? "",
                     userName: data.login ?? "",
-                    gitHubURL: data.gistsURL ?? ""
+                    gitHubURL: data.htmlURL ?? ""
                 )
             }
             .disposed(by: disposeBag)

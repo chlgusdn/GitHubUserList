@@ -38,6 +38,7 @@
 		B19C9C3A2B37F83A0023DD2E /* AuthAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B19C9C392B37F83A0023DD2E /* AuthAPI.swift */; };
 		B19C9C3E2B37F91E0023DD2E /* UpdateAccessTokenDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = B19C9C3D2B37F91E0023DD2E /* UpdateAccessTokenDTO.swift */; };
 		B19C9C402B37FC560023DD2E /* Constant.swift in Sources */ = {isa = PBXBuildFile; fileRef = B19C9C3F2B37FC560023DD2E /* Constant.swift */; };
+		B19C9C422B3823910023DD2E /* Notification+.swift in Sources */ = {isa = PBXBuildFile; fileRef = B19C9C412B3823910023DD2E /* Notification+.swift */; };
 		B1A5DD172B354A360081C99D /* APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A5DD162B354A360081C99D /* APIService.swift */; };
 		B1A5DD192B354B200081C99D /* KeyChainUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A5DD182B354B200081C99D /* KeyChainUtil.swift */; };
 		B1A5DD1B2B354DB20081C99D /* NetworkError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A5DD1A2B354DB20081C99D /* NetworkError.swift */; };
@@ -96,6 +97,7 @@
 		B19C9C392B37F83A0023DD2E /* AuthAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthAPI.swift; sourceTree = "<group>"; };
 		B19C9C3D2B37F91E0023DD2E /* UpdateAccessTokenDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateAccessTokenDTO.swift; sourceTree = "<group>"; };
 		B19C9C3F2B37FC560023DD2E /* Constant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constant.swift; sourceTree = "<group>"; };
+		B19C9C412B3823910023DD2E /* Notification+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Notification+.swift"; sourceTree = "<group>"; };
 		B1A5DD162B354A360081C99D /* APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIService.swift; sourceTree = "<group>"; };
 		B1A5DD182B354B200081C99D /* KeyChainUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyChainUtil.swift; sourceTree = "<group>"; };
 		B1A5DD1A2B354DB20081C99D /* NetworkError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkError.swift; sourceTree = "<group>"; };
@@ -284,6 +286,7 @@
 			children = (
 				B1A5DD222B355CBD0081C99D /* UIViewController+.swift */,
 				B1333DAA2B35903800B5ABD2 /* UIApplication+.swift */,
+				B19C9C412B3823910023DD2E /* Notification+.swift */,
 			);
 			path = Extension;
 			sourceTree = "<group>";
@@ -508,6 +511,7 @@
 				B1A5DD1F2B3550910081C99D /* User.swift in Sources */,
 				B11EDEBE2B33DD9E00A72F16 /* BaseTarget.swift in Sources */,
 				B11EDE7B2B33DC3900A72F16 /* AppDelegate.swift in Sources */,
+				B19C9C422B3823910023DD2E /* Notification+.swift in Sources */,
 				B1A5DD192B354B200081C99D /* KeyChainUtil.swift in Sources */,
 				B11EDEC12B33DFBE00A72F16 /* CustomSearchBar.swift in Sources */,
 				B19C9C3A2B37F83A0023DD2E /* AuthAPI.swift in Sources */,
