@@ -10,6 +10,7 @@ import Moya
 import RxSwift
 @testable import GitHubUserList
 
+/// 홈 화면 테스트 클래스
 final class HomeScreenTest: XCTestCase {
 
     var homeService: HomeService!
