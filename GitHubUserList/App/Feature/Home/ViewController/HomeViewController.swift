@@ -157,6 +157,21 @@ extension HomeViewController: UILayoutable {
             .map { $0 ? EmptyView(message: "검색된 유저가 없습니다") : nil }
             .bind(to: collectionView.rx.backgroundView)
             .disposed(by: disposeBag)
+        
+        output.errorPublish
+            .subscribe(onNext: {[weak self] error in
+                // accessToken 발급 도중 에러가 발생했을 경우 종료
+                self?.alert(
+                    title: "",
+                    message: error.errorDescription,
+                    confirmTitle: "확인",
+                    confirmHandler: { _ in
+                        exit(0)
+                    }
+                )
+                
+            })
+            .disposed(by: disposeBag)
     }
 }
 

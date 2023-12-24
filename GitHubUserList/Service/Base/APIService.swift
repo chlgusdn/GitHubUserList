@@ -102,6 +102,8 @@ class BaseAPIService<Target: BaseTargetType> {
             return NetworkError.validationfailed
         case 503:
             return NetworkError.serverError
+        case 401:
+            return NetworkError.badCredential
         default:
             return NetworkError.unknown(message: message)
         }

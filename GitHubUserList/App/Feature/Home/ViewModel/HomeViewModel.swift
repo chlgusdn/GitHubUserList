@@ -24,6 +24,8 @@ final class HomeViewModel: ViewModelType {
         let userListPublish = BehaviorRelay<[User]>(value: [])
         /// emptyView showing여부값을 가질 relay { 기본값은 보여줌 }
         let showingEmptyViewRelay = BehaviorRelay(value: true)
+        /// 에러에 대한 publish
+        let errorPublish = PublishRelay<NetworkError>()
     }
     
     // MARK: ViewModel에서 사용할 private 변수
@@ -102,11 +104,18 @@ final class HomeViewModel: ViewModelType {
                     code: code
                 )
                 return self?.authService.getAccessToken(dto: dto)
-                    .catch { _ in return .never() } ?? .never()
+                    .catch { error in
+                        let error = error as! NetworkError
+                        output.errorPublish.accept(error)
+                        return .never()
+                    } ?? .never()
             }
             .subscribe(onNext: {
                 if let accessToken = $0.accessToken {
                     KeychainUtil.create(key: .accessToken, token: accessToken)
+                }
+                else {
+                    output.errorPublish.accept(.unknown(message: "accessToken값을 가져오지 못했습니다"))
                 }
             })
             .disposed(by: disposeBag)
