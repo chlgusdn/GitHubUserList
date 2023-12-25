@@ -50,6 +50,8 @@
 		B1A5DD252B3563250081C99D /* AccessToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A5DD242B3563250081C99D /* AccessToken.swift */; };
 		B1A5DD272B3564390081C99D /* AccessTokenDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A5DD262B3564390081C99D /* AccessTokenDTO.swift */; };
 		B1A5DD292B3569BD0081C99D /* EmptyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A5DD282B3569BD0081C99D /* EmptyView.swift */; };
+		B1BC0D912B3929B700CBC45D /* RxTest in Frameworks */ = {isa = PBXBuildFile; productRef = B1BC0D902B3929B700CBC45D /* RxTest */; };
+		B1BC0D932B392F0B00CBC45D /* RxBlocking in Frameworks */ = {isa = PBXBuildFile; productRef = B1BC0D922B392F0B00CBC45D /* RxBlocking */; };
 		B1C4CF562B36FCEF0030C64D /* APIRequestInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C4CF552B36FCEF0030C64D /* APIRequestInterceptor.swift */; };
 		B1C7A74A2B3841670015B806 /* HomeScreenTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C7A7492B3841670015B806 /* HomeScreenTest.swift */; };
 /* End PBXBuildFile section */
@@ -134,6 +136,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				B19C9C472B38286F0023DD2E /* Moya in Frameworks */,
+				B1BC0D932B392F0B00CBC45D /* RxBlocking in Frameworks */,
+				B1BC0D912B3929B700CBC45D /* RxTest in Frameworks */,
 				B19C9C452B3828640023DD2E /* RxSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -346,10 +350,10 @@
 			isa = PBXGroup;
 			children = (
 				B1A5DD242B3563250081C99D /* AccessToken.swift */,
+				B19C9C3D2B37F91E0023DD2E /* UpdateAccessTokenDTO.swift */,
 				B1A5DD262B3564390081C99D /* AccessTokenDTO.swift */,
 				B19C9C392B37F83A0023DD2E /* AuthAPI.swift */,
 				B19C9C372B37F8290023DD2E /* AuthService.swift */,
-				B19C9C3D2B37F91E0023DD2E /* UpdateAccessTokenDTO.swift */,
 			);
 			path = Auth;
 			sourceTree = "<group>";
@@ -408,6 +412,8 @@
 			packageProductDependencies = (
 				B19C9C442B3828640023DD2E /* RxSwift */,
 				B19C9C462B38286F0023DD2E /* Moya */,
+				B1BC0D902B3929B700CBC45D /* RxTest */,
+				B1BC0D922B392F0B00CBC45D /* RxBlocking */,
 			);
 			productName = GitHubUserListTests;
 			productReference = B11EDE8D2B33DC3A00A72F16 /* GitHubUserListTests.xctest */;
@@ -976,6 +982,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = B11EDEB42B33DCF200A72F16 /* XCRemoteSwiftPackageReference "Moya" */;
 			productName = Moya;
+		};
+		B1BC0D902B3929B700CBC45D /* RxTest */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B11EDEAD2B33DCCC00A72F16 /* XCRemoteSwiftPackageReference "RxSwift" */;
+			productName = RxTest;
+		};
+		B1BC0D922B392F0B00CBC45D /* RxBlocking */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B11EDEAD2B33DCCC00A72F16 /* XCRemoteSwiftPackageReference "RxSwift" */;
+			productName = RxBlocking;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

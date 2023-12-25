@@ -8,16 +8,22 @@
 import XCTest
 import Moya
 import RxSwift
+import RxCocoa
+import RxTest
+import RxBlocking
+
 @testable import GitHubUserList
 
 /// 홈 화면 테스트 클래스
+/// https://yesiamnahee.tistory.com/176 참고
 final class HomeScreenTest: XCTestCase {
 
     var homeService: HomeService!
     var authService: AuthService!
     var viewModel: HomeViewModel!
     var searchUser: SearchUser!
-    var expectation: XCTestExpectation!
+    var scheduler: TestScheduler!
+    var disposeBag: DisposeBag!
     
     override func setUpWithError() throws {
         let user = User(
@@ -47,7 +53,8 @@ final class HomeScreenTest: XCTestCase {
             items: [user]
         )
         
-        expectation = XCTestExpectation()
+        scheduler = TestScheduler(initialClock: 0)
+        disposeBag = DisposeBag()
     }
     
     func test_응답값이_정상일경우_유저리스트는_값이있어야합니다() {
@@ -61,16 +68,13 @@ final class HomeScreenTest: XCTestCase {
         viewModel.input.actionUserSearchPublish.accept("")
         
         // then
-        output.userListPublish.subscribe(onNext: { [unowned self] result in
-            XCTAssertEqual(searchUser.items?.count, result.count)
-            expectation.fulfill()
-        })
-        .dispose()
-        
-        wait(
-            for: [expectation],
-            timeout: 2.0
-        )
+        do {
+            let userList = try output.userListPublish.toBlocking(timeout: 2.0).first()
+            XCTAssertEqual(userList?.count, 1)
+        }
+        catch {
+            XCTFail(error.localizedDescription)
+        }
     }
     
     func test_응답값이_에러인경우_유저리스트는_빈값이여야합니다() {
@@ -84,17 +88,13 @@ final class HomeScreenTest: XCTestCase {
         viewModel.input.actionUserSearchPublish.accept("")
         
         //then
-        output.userListPublish
-            .subscribe(onNext: { [unowned self] result in
-                XCTAssertTrue(result.isEmpty)
-                expectation.fulfill()
-            })
-            .dispose()
-        
-        wait(
-            for: [expectation],
-            timeout: 2.0
-        )
+        do {
+            let userList = try output.userListPublish.toBlocking(timeout: 2.0).first()
+            XCTAssertEqual(userList?.count, 0)
+        }
+        catch {
+            XCTFail(error.localizedDescription)
+        }
     }
     
     func test_응답값이_정상일경우_emptyView는_false이여야합니다() {
@@ -108,17 +108,13 @@ final class HomeScreenTest: XCTestCase {
         viewModel.input.actionUserSearchPublish.accept("")
         
         //then
-        output.showingEmptyViewRelay
-            .subscribe(onNext: { [unowned self] isShow in
-                XCTAssertFalse(isShow)
-                expectation.fulfill()
-            })
-            .dispose()
-        
-        wait(
-            for: [expectation],
-            timeout: 2.0
-        )
+        do {
+            let isShowing = try output.showingEmptyViewRelay.toBlocking(timeout: 2.0).first()
+            XCTAssertEqual(isShowing, false)
+        }
+        catch {
+            XCTFail(error.localizedDescription)
+        }
     }
     
     func test_응답값이_에러인경우_emptyView는_true이여야합니다() {
@@ -132,17 +128,13 @@ final class HomeScreenTest: XCTestCase {
         viewModel.input.actionUserSearchPublish.accept("")
         
         //then
-        output.showingEmptyViewRelay
-            .subscribe(onNext: { [unowned self] isShow in
-                XCTAssertTrue(isShow)
-                expectation.fulfill()
-            })
-            .dispose()
-        
-        wait(
-            for: [expectation],
-            timeout: 2.0
-        )
+        do {
+            let isShowing = try output.showingEmptyViewRelay.toBlocking(timeout: 2.0).first()
+            XCTAssertEqual(isShowing, true)
+        }
+        catch {
+            XCTFail(error.localizedDescription)
+        }
     }
 
     func test_응답값이_정상이지만_값이없을경우에는_emptyView는_true이여야합니다() {
@@ -175,17 +167,13 @@ final class HomeScreenTest: XCTestCase {
         viewModel.input.actionUserSearchPublish.accept("")
         
         //then
-        output.showingEmptyViewRelay
-            .subscribe(onNext: { [unowned self] isShow in
-                XCTAssertTrue(isShow)
-                expectation.fulfill()
-            })
-            .dispose()
-        
-        wait(
-            for: [expectation],
-            timeout: 2.0
-        )
+        do {
+            let isShowing = try output.showingEmptyViewRelay.toBlocking(timeout: 2.0).first()
+            XCTAssertEqual(isShowing, true)
+        }
+        catch {
+            XCTFail(error.localizedDescription)
+        }
     }
     
     func test_accessToken값이_null이면_errorPopUp을띄워야합니다() {
@@ -199,7 +187,6 @@ final class HomeScreenTest: XCTestCase {
                         200,
                         """
                             {
-                              "access_token": null,
                               "scope":"repo,gist",
                               "token_type":"bearer"
                             }
@@ -215,48 +202,53 @@ final class HomeScreenTest: XCTestCase {
         
         //when
         let output = viewModel.transform()
-        viewModel.input.actionGetAcccessTokenPublish.accept("token")
+        let observer = scheduler.createObserver(NetworkError.self)
+        
+        output.errorPublish
+            .subscribe(observer)
+            .disposed(by: disposeBag)
+        
+        viewModel.input.actionGetAcccessTokenPublish.accept("code")
+        
+        scheduler.start()
+        
         //then
-        output.errorPublish.subscribe(onNext: { [unowned self] error in
-            XCTAssertEqual(error.errorDescription, "accessToken을 가져오지 못했습니다")
-            expectation.fulfill()
-        })
-        .dispose()
+        XCTAssertEqual(
+            observer.events,
+            [
+                .next(0, .unknown(message: "accessToken 또는 refreshToken값을 가져오지 못했습니다"))
+            ]
+        )
     }
     
     func test_accessToken에러발생시_에러에_해당하는_오류팝업을띄워야합니다() {
         //given
         homeService = HomeService(isStub: true, sampleStatusCode: 200)
-        authService = AuthService(isStub: true) { target in
-            return Endpoint(
-                url: target.baseURL.absoluteString,
-                sampleResponseClosure: {
-                    EndpointSampleResponse.networkResponse(
-                        503,
-                        """
-                            {
-                              "access_token": "accessToken",
-                              "scope":"repo,gist",
-                              "token_type":"bearer"
-                            }
-                        """.data(using: .utf8)!
-                    )
-                },
-                method: target.method,
-                task: target.task,
-                httpHeaderFields: target.headers
-            )
-        }
+        authService = AuthService(isStub: true, sampleStatusCode: 503)
         viewModel = HomeViewModel(homeService: homeService, authService: authService)
         
         //when
         let output = viewModel.transform()
+        let observer = scheduler.createObserver(NetworkError.self)
+        
+        output.errorPublish
+            .subscribe(observer)
+            .disposed(by: disposeBag)
+        
         viewModel.input.actionGetAcccessTokenPublish.accept("code")
+        
+        scheduler.start()
+        
         //then
-        output.errorPublish.subscribe(onNext: { [unowned self] error in
-            XCTAssertEqual(error.errorDescription, "서비스를 이용할 수 없습니다")
-            expectation.fulfill()
-        })
-        .dispose()
+        XCTAssertEqual(
+            observer.events,
+            [
+                .next(0, .serverError)
+            ]
+        )
+    }
+    
+    override func tearDownWithError() throws {
+        disposeBag = nil
     }
 }

@@ -111,11 +111,13 @@ final class HomeViewModel: ViewModelType {
                     } ?? .never()
             }
             .subscribe(onNext: {
-                if let accessToken = $0.accessToken {
+                if let accessToken = $0.accessToken,
+                   let refreshToken = $0.refreshToken {
                     KeychainUtil.create(key: .accessToken, token: accessToken)
+                    KeychainUtil.create(key: .refreshToken, token: refreshToken)
                 }
                 else {
-                    output.errorPublish.accept(.unknown(message: "accessToken값을 가져오지 못했습니다"))
+                    output.errorPublish.accept(.unknown(message: "accessToken 또는 refreshToken값을 가져오지 못했습니다"))
                 }
             })
             .disposed(by: disposeBag)

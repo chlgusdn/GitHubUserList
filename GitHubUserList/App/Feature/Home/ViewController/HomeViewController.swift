@@ -161,6 +161,7 @@ extension HomeViewController: UILayoutable {
             .disposed(by: disposeBag)
         
         output.errorPublish
+            .observe(on: MainScheduler.instance)
             .subscribe(onNext: {[weak self] error in
                 // accessToken 발급 도중 에러가 발생했을 경우 종료
                 self?.alert(

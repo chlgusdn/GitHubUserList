@@ -8,7 +8,7 @@
 import Foundation
 
 /// API 호출 시 에러 케이스 enum
-enum NetworkError: Error {
+enum NetworkError: Error, Equatable {
     case invaildURL
     case notModified
     case validationfailed
