@@ -34,6 +34,7 @@ final class APIRequestInterceptor: RequestInterceptor {
                 grantType: "refresh_token"
             )
             
+            /// 해당 API는 스트림이 끊겨도 상관없기 때문에 Result 타입이 아닌 Single<D>타입으로 진행
             authService.updateAccessToken(dto: updateDTO)
                 .subscribe(onSuccess: {
                     if let accessToken = $0.accessToken,

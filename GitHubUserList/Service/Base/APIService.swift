@@ -37,7 +37,24 @@ class BaseAPIService<Target: BaseTargetType> {
             let requestInterceptor = APIRequestInterceptor()
             let session = Session(interceptor: requestInterceptor)
             
-            provider = MoyaProvider<Target>(session: session, plugins: [loggerPlugin, authPlugin])
+            provider = MoyaProvider<Target>(
+                requestClosure: { endpoint, closure in
+                    do {
+                        // 30초 타임아웃 설정
+                        var request = try endpoint.urlRequest()
+                        request.timeoutInterval = 30
+                        closure(.success(request))
+                    }
+                    catch {
+                        closure(.failure(MoyaError.underlying(error, nil)))
+                    }
+                },
+                session: session,
+                plugins: [
+                    loggerPlugin,
+                    authPlugin
+                ]
+            )
         }
         else {
             let endPointClosure = { (target:Target) -> Endpoint in
@@ -58,19 +75,63 @@ class BaseAPIService<Target: BaseTargetType> {
     }
     
     /**
-     * - Description: 페이징이 필요한 HTTP Request + DTO변환이 필요한 Request 메서드
+     * - Description: HTTP Request  메서드 (스트림이 끊겨도 되는 경우에 사용)
      * - Parameter type: APITarget
      * - Parameter responseType: HTTP Request시 디코딩할 객체 타입
-     * - Returns Single로 Wrapping + BasePagenationResponse객체로 Wrapping한 Response 객체의 DTO 배열 객체
+     * - Returns Single로 Wrapping 객체로 Wrapping한 Response 객체
      */
     func singleRequest<D: Decodable>(_ type: Target, responseType: D.Type) -> Single<D> {
         return provider
             .rx
             .request(type)
-            .timeout(.seconds(30), scheduler: MainScheduler.instance)
             .filterSuccessfulStatusCodes()
             .map(responseType)
             .catch { throw self.networkErrorHandling(error: $0) }
+    }
+    
+    /**
+     * - Description: HTTP Request  메서드 (스트림이 끊기면 안되는 경우에 사용)
+     * - Parameter type: APITarget
+     * - Parameter responseType: HTTP Request시 디코딩할 객체 타입
+     * - Returns Single로 Wrapping 객체로 Wrapping한 Response 객체
+     */
+    func singleRequest<D: Decodable>(_ type: Target, responseType: D.Type) -> Single<Result<D, NetworkError>> {
+        return Single<Result<D, NetworkError>>.create { [weak self] single in
+            
+            guard let `self` = self else { return Disposables.create() }
+            
+            let cancelable = provider.request(type) { result in
+                var returnResult: Result<D, NetworkError>
+                switch result {
+                case .success(let response):
+                    // 200 ~ 300 사이 일경우
+                    if (200...300) ~= response.statusCode {
+                        guard let responseData = try? JSONDecoder().decode(responseType.self, from: response.data) else {
+                            returnResult = .failure(NetworkError.unknown(message: "데이터 디코드 에러입니다"))
+                            single(.success(returnResult))
+                            return
+                        }
+                        
+                        returnResult = .success(responseData)
+                        single(.success(returnResult))
+                    }
+                    else {
+                        let error = self.restAPIErrorHandling(code: response.statusCode, message: "[\(response.statusCode)] 오류 입니다")
+                        returnResult = .failure(error)
+                        single(.success(returnResult))
+                    }
+                    
+                case .failure(let moyaError):
+                    let error = self.networkErrorHandling(error: moyaError)
+                    returnResult = .failure(error)
+                    single(.success(returnResult))
+                }
+            }
+            
+            return Disposables.create {
+                cancelable.cancel()
+            }
+        }
     }
     
     /**

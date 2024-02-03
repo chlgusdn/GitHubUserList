@@ -57,7 +57,7 @@ final class HomeViewModel: ViewModelType {
         
         /// 유저 정보 조회
         input.actionUserSearchPublish
-            .flatMap { [weak self] userName -> Single<SearchUser> in
+            .flatMap { [weak self] userName -> Single<Result<SearchUser, NetworkError>> in
                 guard let `self` = self else { return .never() }
                 
                 // 기존 검색어가 아닌 새로운 검색어 입력 시 값 초기화
@@ -74,50 +74,50 @@ final class HomeViewModel: ViewModelType {
                     return .never()
                 }
                 
-                return homeService.getSearchUser(
-                    userName: userName,
-                    page: currentPage
-                ).catch { error in return .never() }
+                return homeService.getSearchUser(userName: userName, page: currentPage)
             }
-            .subscribe(onNext: { [weak self] searchUser in
-                if let users = searchUser.items {
-                    /// viewModel에서 체크할 totalCount
-                    self?.totalCount = searchUser.totalCount ?? users.count
-                    /// 현재 유저 + 페이징에서 조회한 유저 정보
-                    let totalUsers = output.userListPublish.value + users
-                    
-                    output.userListPublish.accept(totalUsers)
-                    output.showingEmptyViewRelay.accept(totalUsers.isEmpty)
-                }
-                else {
-                    output.showingEmptyViewRelay.accept(true)
+            .subscribe(onNext: { [weak self] result in
+                if case .success(let searchUser) = result {
+                    if let users = searchUser.items {
+                        /// viewModel에서 체크할 totalCount
+                        self?.totalCount = searchUser.totalCount ?? users.count
+                        /// 현재 유저 + 페이징에서 조회한 유저 정보
+                        let totalUsers = output.userListPublish.value + users
+                        
+                        output.userListPublish.accept(totalUsers)
+                        output.showingEmptyViewRelay.accept(totalUsers.isEmpty)
+                    }
+                    else {
+                        output.showingEmptyViewRelay.accept(true)
+                    }
                 }
             })
             .disposed(by: disposeBag)
         
         /// callback으로 받아온 code값을 가지고 accessToken을 저장
         input.actionGetAcccessTokenPublish
-            .flatMap { [weak self] code -> Single<AccessToken> in
+            .flatMap { [weak self] code -> Single<Result<AccessToken, NetworkError>> in
                 let dto = AccessTokenDTO(
                     clientId: Constant.clientId,
                     clientSecret: Constant.clientSecret,
                     code: code
                 )
-                return self?.authService.getAccessToken(dto: dto)
-                    .catch { error in
-                        let error = error as! NetworkError
-                        output.errorPublish.accept(error)
-                        return .never()
-                    } ?? .never()
+                return self?.authService.getAccessToken2Result(dto: dto) ?? .never()
             }
-            .subscribe(onNext: {
-                if let accessToken = $0.accessToken,
-                   let refreshToken = $0.refreshToken {
-                    KeychainUtil.create(key: .accessToken, token: accessToken)
-                    KeychainUtil.create(key: .refreshToken, token: refreshToken)
-                }
-                else {
-                    output.errorPublish.accept(.unknown(message: "accessToken 또는 refreshToken값을 가져오지 못했습니다"))
+            .subscribe(onNext: { result in
+                switch result {
+                case .success(let response):
+                    if let accessToken = response.accessToken,
+                       let refreshToken = response.refreshToken {
+                        KeychainUtil.create(key: .accessToken, token: accessToken)
+                        KeychainUtil.create(key: .refreshToken, token: refreshToken)
+                    }
+                    else {
+                        output.errorPublish.accept(.unknown(message: "accessToken 또는 refreshToken값을 가져오지 못했습니다"))
+                    }
+                    
+                case .failure(let error):
+                    output.errorPublish.accept(error)
                 }
             })
             .disposed(by: disposeBag)
