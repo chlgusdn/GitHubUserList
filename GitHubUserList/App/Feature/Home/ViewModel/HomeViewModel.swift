@@ -48,39 +48,39 @@ final class HomeViewModel: ViewModelType {
     
         // 유저 페이징 observable
         input.actionUserPagingPublish
-            .subscribe(onNext: { [weak self] in
-                guard let `self` = self else { return }
-                currentPage += 1
-                input.actionUserSearchPublish.accept(lastSearchText)
+            .withUnretained(self)
+            .subscribe(onNext: { (self, _) in
+                self.currentPage += 1
+                self.input.actionUserSearchPublish.accept(self.lastSearchText)
             })
             .disposed(by: disposeBag)
         
         /// 유저 정보 조회
         input.actionUserSearchPublish
-            .flatMap { [weak self] userName -> Single<Result<SearchUser, NetworkError>> in
-                guard let `self` = self else { return .never() }
-                
+            .withUnretained(self)
+            .flatMap { (self, userName) -> Single<Result<SearchUser, NetworkError>> in
                 // 기존 검색어가 아닌 새로운 검색어 입력 시 값 초기화
-                if lastSearchText != userName {
-                    currentPage = 1
-                    totalCount = 0
+                if self.lastSearchText != userName {
+                    self.currentPage = 1
+                    self.totalCount = 0
                     output.userListPublish.accept([])
-                    lastSearchText = userName
+                    self.lastSearchText = userName
                 }
                 
                 // totalCount보다 userList가 더 많거나 같으면 API를 호출하지 않음
-                if totalCount > 0 &&
-                    totalCount <= output.userListPublish.value.count {
+                if self.totalCount > 0 &&
+                    self.totalCount <= output.userListPublish.value.count {
                     return .never()
                 }
                 
-                return homeService.getSearchUser(userName: userName, page: currentPage)
+                return self.homeService.getSearchUser(userName: userName, page: self.currentPage)
             }
-            .subscribe(onNext: { [weak self] result in
+            .withUnretained(self)
+            .subscribe(onNext: { (self, result) in
                 if case .success(let searchUser) = result {
                     if let users = searchUser.items {
                         /// viewModel에서 체크할 totalCount
-                        self?.totalCount = searchUser.totalCount ?? users.count
+                        self.totalCount = searchUser.totalCount ?? users.count
                         /// 현재 유저 + 페이징에서 조회한 유저 정보
                         let totalUsers = output.userListPublish.value + users
                         
@@ -96,13 +96,15 @@ final class HomeViewModel: ViewModelType {
         
         /// callback으로 받아온 code값을 가지고 accessToken을 저장
         input.actionGetAcccessTokenPublish
-            .flatMap { [weak self] code -> Single<Result<AccessToken, NetworkError>> in
+            .withUnretained(self)
+            .flatMap { (self, code) -> Single<Result<AccessToken, NetworkError>> in
                 let dto = AccessTokenDTO(
                     clientId: Constant.clientId,
                     clientSecret: Constant.clientSecret,
                     code: code
                 )
-                return self?.authService.getAccessToken2Result(dto: dto) ?? .never()
+                
+                return self.authService.getAccessToken2Result(dto: dto)
             }
             .subscribe(onNext: { result in
                 switch result {
